@@ -6,7 +6,7 @@ const { generateYearPrefixedNumber } = require('../helpers/basicFunctions');
 const router = express.Router();
 
 
-router.get('/', async(req, res) => {
+router.get('/', async (req, res) => {
     try {
         const { healthId, number } = req.query;
         let users;
@@ -23,7 +23,7 @@ router.get('/', async(req, res) => {
     }
 });
 
-router.post('/', async(req, res) => {
+router.post('/', async (req, res) => {
     const user = new User({
         healthId: `HK${generateYearPrefixedNumber}`,
         name: req.body.name,
@@ -48,7 +48,7 @@ router.post('/', async(req, res) => {
     }
 });
 
-router.put('/:id', async(req, res) => {
+router.put('/:id', async (req, res) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
@@ -63,7 +63,7 @@ router.put('/:id', async(req, res) => {
     }
 });
 
-router.delete('/:id', async(req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (user == null) {

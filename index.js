@@ -4,14 +4,17 @@ const app = express();
 const mongoose = require('mongoose');
 const usersRouter = require('./routers/users');
 const hospitalRouter = require('./routers/hospitals');
+const authRouter = require('./routers/auth');
+const paymentRouter = require('./routers/payment');
+
 require('dotenv').config();
 
 const corsOptions = {
-        origin: '*',
-        credentials: true,
-        optionsSuccessStatus: 200
-    }
-    // middlewares
+    origin: '*',
+    credentials: true,
+    optionsSuccessStatus: 200
+}
+// middlewares
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,3 +29,5 @@ app.listen(process.env.PORT, () => { console.log('Server is running on port ' + 
 app.get('/', (req, res) => { res.status(200).send('Server is running'); });
 app.use('/users', usersRouter);
 app.use('/hospitals', hospitalRouter);
+app.use('/auth', authRouter);
+app.use('/pay', paymentRouter);
