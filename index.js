@@ -4,6 +4,7 @@ const app = express();
 const mongoose = require('mongoose');
 const usersRouter = require('./routers/users');
 const hospitalRouter = require('./routers/hospitals');
+const agentsRouter = require('./routers/agents');
 const authRouter = require('./routers/auth');
 const paymentRouter = require('./routers/payment');
 
@@ -29,5 +30,6 @@ app.listen(process.env.PORT, () => { console.log('Server is running on port ' + 
 app.get('/', (req, res) => { res.status(200).send('Server is running'); });
 app.use('/users', usersRouter);
 app.use('/hospitals', hospitalRouter);
+app.use('/agents', agentsRouter);
 app.use('/auth', authRouter);
 app.use('/pay', paymentRouter);

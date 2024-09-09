@@ -8,16 +8,28 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const { healthId, number } = req.query;
-        let users;
+        const { healthId, number, page = 1, limit = 10 } = req.query;
+        const formatedNumber = number && number.length === 10 ? `91${number}` : number;
+        const skip = (page - 1) * limit;
+
+        let query = {};
         if (healthId) {
-            users = await User.find({ healthId });
+            query.healthId = healthId;
         } else if (number) {
-            users = await User.find({ number });
-        } else {
-            users = await User.find();
+            query.number = formatedNumber;
         }
-        res.status(200).json(users);
+
+        const users = await User.find(query)
+            .skip(skip)
+            .limit(Number(limit));
+
+        const totalUsers = await User.countDocuments(query);
+        res.status(200).json({
+            users,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalUsers / limit),
+            totalUsers
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -5,6 +5,7 @@ const { otpTemplate } = require('../helpers/otpTemplate');
 const { getOTP } = require('../helpers/otpGenerator');
 const { sendOtp } = require('../helpers/mobileVerification');
 const MobileUser = require('../schema/mobileUser');
+const Agent = require('../schema/agents');
 const router = express.Router();
 
 // Login a user
@@ -19,7 +20,7 @@ router.post('/new-user', async (req, res) => {
         await newUser.save();
         res.status(201).send(newUser);
     } catch (error) {
-        console.log(error)
+        res.status(400).send({ message: 'Something went wrong' });
     }
 });
 // Login a user
@@ -29,7 +30,7 @@ router.post('/user-login', async (req, res) => {
         const user = await MobileUser.findOne({ number });
         if (user) {
             if (password === user.password) {
-                res.status(200).send({ message: 'Verified' });
+                res.status(200).send({ message: 'Verified', healthId: user.healthId, id: user._id, name: user.name });
             } else {
                 res.status(400).send({ message: 'Password incorrect' });
             }
@@ -41,6 +42,32 @@ router.post('/user-login', async (req, res) => {
     }
 });
 
+// Agent login
+router.post('/agent-login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Find the agent by email
+        const agent = await Agent.findOne({ email });
+        if (!agent) {
+            return res.status(404).send({ message: 'Agent not found' });
+        }
+
+        if (agent.password !== password) {
+            return res.status(400).send({ message: 'Invalid password' });
+        }
+        // If everything is valid, send the response
+        res.status(200).send({
+            message: 'Login successful',
+            agentId: agent.agentID,
+            id: agent._id,
+            name: agent.name
+        });
+    } catch (error) {
+        console.error('Agent login error:', error);
+        res.status(500).send({ message: 'Something went wrong during login' });
+    }
+});
 
 // Send otp to mail
 router.post('/send-otp', async (req, res) => {

@@ -4,7 +4,7 @@ const Hospital = require('../schema/hospitals');
 const router = express.Router();
 
 // Create a new hospital
-router.post('/', async(req, res) => {
+router.post('/', async (req, res) => {
     try {
         const hospital = new Hospital(req.body);
         await hospital.save();
@@ -14,23 +14,35 @@ router.post('/', async(req, res) => {
     }
 });
 
-router.get('/', async(req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const { hospitalId } = req.query;
-        let hospitals;
+        const { hospitalId, page = 1, limit = 10 } = req.query;
+        const skip = (page - 1) * limit;
+
+        let query = {};
         if (hospitalId) {
-            hospitals = await Hospital.find({ hospitalId });
-        } else {
-            hospitals = await Hospital.find();
+            query.hospitalId = hospitalId;
         }
-        res.status(200).json(hospitals);
+
+        const hospitals = await Hospital.find(query)
+            .skip(skip)
+            .limit(Number(limit));
+
+        const totalHospitals = await Hospital.countDocuments(query);
+
+        res.status(200).json({
+            hospitals,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalHospitals / limit),
+            totalHospitals
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
 // Update a hospital by ID
-router.patch('/:id', async(req, res) => {
+router.patch('/:id', async (req, res) => {
     const updates = Object.keys(req.body);
     const allowedUpdates = ['email', 'isverified', 'agentID', 'hospitalDetails', 'doctorList', 'mediaDetails', 'users'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
@@ -55,7 +67,7 @@ router.patch('/:id', async(req, res) => {
 });
 
 // Delete a hospital by ID
-router.delete('/:id', async(req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const hospital = await Hospital.findByIdAndDelete(req.params.id);
         if (!hospital) {
