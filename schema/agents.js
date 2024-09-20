@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-
 const AgentSchema = new mongoose.Schema({
     agentID: {
         type: String,
@@ -17,27 +16,27 @@ const AgentSchema = new mongoose.Schema({
     usersAdded: [{
         healthID: String,
         name: String,
+        amount: Number,
+        type: {
+            type: String,
+            enum: ['new', 'renew'],
+            default: 'renewal',
+            required: true
+        },
         date: {
             type: Date,
             default: Date.now
-        }
+        },
+        plan: String
     }],
     hospitalsAdded: [{
-        hospitalId: String,
+        hospitalID: String,
         name: String,
         date: {
             type: Date,
             default: Date.now
         }
     }],
-    totalCount: {
-        type: Number,
-        default: 0
-    },
-    todaysCount: {
-        type: Number,
-        default: 0
-    }
 });
 
 const Agent = mongoose.model('Agent', AgentSchema);

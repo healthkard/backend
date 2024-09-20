@@ -2,6 +2,8 @@
 const express = require('express');
 const User = require('../schema/users');
 const { generateYearPrefixedNumber } = require('../helpers/basicFunctions');
+const { addUserToAgent } = require('../middleware/updateAgents');
+const { renewUser } = require('../middleware/user/payment');
 
 const router = express.Router();
 
@@ -9,20 +11,28 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const { healthId, number, page = 1, limit = 10 } = req.query;
-        const formatedNumber = number && number.length === 10 ? `91${number}` : number;
+        console.log({ healthId, number, page, limit })
         const skip = (page - 1) * limit;
 
         let query = {};
         if (healthId) {
             query.healthId = healthId;
         } else if (number) {
-            query.number = formatedNumber;
+            // Create an array of possible number formats
+            const numberFormats = [number];
+            if (number.length === 10) {
+                numberFormats.push(`91${number}`);
+            } else {
+                numberFormats.push(number);
+            }
+            query.number = { $in: numberFormats };
         }
-
+        console.log({ query })
         const users = await User.find(query)
             .skip(skip)
             .limit(Number(limit));
 
+        // console.log({ users })
         const totalUsers = await User.countDocuments(query);
         res.status(200).json({
             users,
@@ -36,41 +46,57 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+    const newId = generateYearPrefixedNumber('HK');
+    console.log({ payments: req.body.payments });
+    const plans = require('../data/plans');
+    const lastValidPayment = req.body.payments.slice().reverse().find(p => p.paymentStatus);
+    let expireDate;
+
+    if (lastValidPayment) {
+        const plan = plans.find(p => p.id === lastValidPayment.plan);
+        if (plan) {
+            const durationInDays = plan.days;
+            expireDate = new Date(new Date().getTime() + durationInDays * 24 * 60 * 60 * 1000).toISOString();
+        }
+    }
+
     const user = new User({
-        healthId: `HK${generateYearPrefixedNumber}`,
+        healthId: newId,
         name: req.body.name,
         image: req.body.image,
         email: req.body.email,
         number: req.body.number,
         gender: req.body.gender,
+        dob: req.body.dob,
         age: req.body.age,
         address: req.body.address,
         city: req.body.city,
         pincode: req.body.pincode,
-        expireDate: req.body.expireDate,
+        expireDate: expireDate || req.body.expireDate,
         agent: req.body.agent,
         payments: req.body.payments
     });
 
     try {
         const newUser = await user.save();
+        await addUserToAgent(req.body.name, newId, req.body.payments[req.body.payments.length - 1], 'new');
+
         res.status(201).json(newUser);
     } catch (error) {
+        console.log({ error });
         res.status(400).json({ message: error.message });
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:healthId', async (req, res) => {
+    const { healthId } = req.params;
+    const { payment } = req.body;
     try {
-        const updatedUser = await User.findByIdAndUpdate(
-            req.params.id,
-            req.body, { new: true, runValidators: true }
-        );
-        if (updatedUser == null) {
-            return res.status(404).json({ message: 'User not found' });
+        if (payment) {
+            await renewUser(healthId, payment, res);
         }
-        res.status(200).json(updatedUser);
     } catch (error) {
+        console.log({ error });
         res.status(400).json({ message: error.message });
     }
 });

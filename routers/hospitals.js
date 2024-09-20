@@ -1,27 +1,53 @@
 // hospitalRoutes.js
 const express = require('express');
 const Hospital = require('../schema/hospitals');
+const { addHospitalToAgent } = require('../middleware/updateAgents');
+const { generateYearPrefixedNumber } = require('../helpers/basicFunctions');
 const router = express.Router();
 
 // Create a new hospital
 router.post('/', async (req, res) => {
     try {
-        const hospital = new Hospital(req.body);
-        await hospital.save();
+        const hospitalId = generateYearPrefixedNumber('HH');
+        console.log({ hospitalId });
+        const hospital = { ...req.body, hospitalId: hospitalId };
+        const newHospital = new Hospital(hospital);
+        await newHospital.save();
+        await addHospitalToAgent(hospital.hospitalId, hospital.hospitalDetails.hospitalLegalName, hospital.agentID);
         res.status(201).send(hospital);
     } catch (error) {
+        console.log(error);
         res.status(400).send(error);
     }
 });
 
 router.get('/', async (req, res) => {
     try {
-        const { hospitalId, page = 1, limit = 10 } = req.query;
+        const { hospitalId, page = 1, limit = 10, service, city } = req.query;
         const skip = (page - 1) * limit;
 
+        console.log(req.query);
+
         let query = {};
+
         if (hospitalId) {
             query.hospitalId = hospitalId;
+        }
+
+        if (service) {
+            query.$or = [
+                { 'hospitalDetails.servicesOffered': 'All Services' },
+                { 'hospitalDetails.servicesOffered': service }
+            ];
+        }
+
+        if (city && city !== 'All Cities') {
+            query['hospitalDetails.address.city'] = { $regex: new RegExp(city, 'i') };
+        }
+
+        // If only city is selected and it's not 'All cities', return all hospitals in that city
+        if (city && city !== 'All Cities' && !service) {
+            delete query.$or;
         }
 
         const hospitals = await Hospital.find(query)
@@ -29,6 +55,7 @@ router.get('/', async (req, res) => {
             .limit(Number(limit));
 
         const totalHospitals = await Hospital.countDocuments(query);
+
 
         res.status(200).json({
             hospitals,

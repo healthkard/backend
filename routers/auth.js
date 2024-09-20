@@ -73,21 +73,23 @@ router.post('/agent-login', async (req, res) => {
 router.post('/send-otp', async (req, res) => {
     try {
         const { email, userName } = req.body;
+        console.log({ email, userName })
         const otpCode = getOTP();
         const emailHtml = otpTemplate(userName, otpCode);
         await sendMail(email, 'Your OTP for Healthkard Verification', 'OTP verification', emailHtml);
         res.status(200).send({ message: 'Successfully send the message', otpCode })
     } catch (error) {
+        console.log(error);
         res.status(500).send({ message: 'Unable to send email', error })
     }
 });
 
 
 // Route to send OTP to phone number
-router.get('/send-otp-mobile', async (req, res) => {
+router.post('/send-mobile-otp', async (req, res) => {
     try {
-        const mobileNumber = req.query.mobileNumber || '+919347235528';  // Get the mobile number from query parameters
-
+        const mobileNumber = req.body.mobileNumber || '+919347235528';  // Get the mobile number from query parameters
+        console.log(mobileNumber);
         if (!mobileNumber) {
             return res.status(400).send({ message: 'Mobile number is required' });
         }

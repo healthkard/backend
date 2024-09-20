@@ -28,8 +28,8 @@ const HospitalSchema = new mongoose.Schema({
     hospitalDetails: {
         daysAvailabilty: Array,
         from: String,
-        gstNumber: String,
-        hospitalGSTFile: String,
+        // gstNumber: String,
+        // hospitalGSTFile: String,
         hospitalLegalName: String,
         hospitalLicense: String,
         hospitalNumber: String,

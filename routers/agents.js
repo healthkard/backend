@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Agent = require('../schema/agents');
+const { generateYearPrefixedNumber } = require('../helpers/basicFunctions');
 
 // Get hospitals added by an agent
 router.get('/:id/hospitals-added', async (req, res) => {
@@ -62,7 +63,7 @@ router.get('/:id', async (req, res) => {
 
 // Create a new agent
 router.post('/', async (req, res) => {
-    const agent = new Agent(req.body);
+    const agent = new Agent({ ...req.body, agentID: generateYearPrefixedNumber('HA') });
     try {
         const newAgent = await agent.save();
         res.status(201).json(newAgent);
