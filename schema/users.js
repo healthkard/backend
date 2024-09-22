@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     image: { type: String, required: true },
     email: { type: String },
     number: { type: String, required: true },
-    dob: { type: Date, required: true },
+    dob: { type: Date, required: true, default: Date.now },
     gender: { type: String, required: true },
     age: { type: String, required: false },
     address: { type: String, required: true },
@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     expireDate: { type: Date, default: Date.now },
     agent: { type: String, default: 'self' },
     payments: [{
-        amount: { type: String, required: true },
+        amount: { type: Number, required: true, default: 99 },
         plan: { type: String, required: true, default: '1 month' },
         transactionId: { type: String, default: null },
         issueDate: { type: Date, default: Date.now },

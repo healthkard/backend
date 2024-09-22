@@ -13,21 +13,36 @@ const AgentSchema = new mongoose.Schema({
     password: String,
     number: String,
     createDate: String,
+    healthkardsTarget: {
+        type: Number,
+        default: 15000
+    },
+    hospitalsTarget: {
+        type: Number,
+        default: 10
+    },
     usersAdded: [{
         healthID: String,
         name: String,
-        amount: Number,
+        amount: {
+            type: Number,
+            default: 99
+        },
         type: {
             type: String,
             enum: ['new', 'renew'],
-            default: 'renewal',
+            default: 'renew',
             required: true
         },
         date: {
             type: Date,
             default: Date.now
         },
-        plan: String
+        plan: {
+            type: String,
+            enum: ['1 month', '3 months', '6 months', '1 year'],
+            default: '1 month'
+        }
     }],
     hospitalsAdded: [{
         hospitalID: String,

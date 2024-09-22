@@ -11,7 +11,6 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const { healthId, number, page = 1, limit = 10 } = req.query;
-        console.log({ healthId, number, page, limit })
         const skip = (page - 1) * limit;
 
         let query = {};
@@ -27,7 +26,6 @@ router.get('/', async (req, res) => {
             }
             query.number = { $in: numberFormats };
         }
-        console.log({ query })
         const users = await User.find(query)
             .skip(skip)
             .limit(Number(limit));
@@ -47,7 +45,6 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     const newId = generateYearPrefixedNumber('HK');
-    console.log({ payments: req.body.payments });
     const plans = require('../data/plans');
     const lastValidPayment = req.body.payments.slice().reverse().find(p => p.paymentStatus);
     let expireDate;
@@ -79,7 +76,7 @@ router.post('/', async (req, res) => {
 
     try {
         const newUser = await user.save();
-        await addUserToAgent(req.body.name, newId, req.body.payments[req.body.payments.length - 1], 'new');
+        await addUserToAgent(newId, req.body.payments[req.body.payments.length - 1], 'new', req.body.name);
 
         res.status(201).json(newUser);
     } catch (error) {

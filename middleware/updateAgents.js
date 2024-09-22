@@ -2,7 +2,6 @@ const Agent = require("../schema/agents");
 const plans = require('../data/plans');
 
 const addUserToAgent = async (healthID, payment, type = 'renew', name) => {
-    console.log({ payment });
     if (payment.agent) {
         const agent = await Agent.findOne({ agentID: payment.agent });
         if (agent) {

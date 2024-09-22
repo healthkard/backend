@@ -69,6 +69,7 @@ router.post('/agent-login', async (req, res) => {
     }
 });
 
+
 // Send otp to mail
 router.post('/send-otp', async (req, res) => {
     try {
@@ -102,5 +103,45 @@ router.post('/send-mobile-otp', async (req, res) => {
     }
 });
 
+
+// Check if email exists
+router.post('/check-email', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).send({ message: 'Email is required' });
+        }
+
+        const user = await MobileUser.findOne({ email });
+        if (user) {
+            res.status(200).send({ exists: true, message: 'Email already exists' });
+        } else {
+            res.status(200).send({ exists: false, message: 'Email is available' });
+        }
+    } catch (error) {
+        console.error('Error checking email:', error);
+        res.status(500).send({ message: 'Something went wrong while checking email' });
+    }
+});
+
+// Check if number exists
+router.post('/check-number', async (req, res) => {
+    try {
+        const { number } = req.body;
+        if (!number) {
+            return res.status(400).send({ message: 'Phone number is required' });
+        }
+
+        const user = await MobileUser.findOne({ number });
+        if (user) {
+            res.status(200).send({ exists: true, message: 'Phone number already exists' });
+        } else {
+            res.status(200).send({ exists: false, message: 'Phone number is available' });
+        }
+    } catch (error) {
+        console.error('Error checking phone number:', error);
+        res.status(500).send({ message: 'Something went wrong while checking phone number' });
+    }
+});
 
 module.exports = router;
