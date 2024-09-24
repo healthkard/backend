@@ -62,7 +62,7 @@ router.post('/', async (req, res) => {
         name: req.body.name,
         image: req.body.image,
         email: req.body.email,
-        number: req.body.number,
+        number: req.body.number.length === 10 ? `91${req.body.number}` : req.body.number,
         gender: req.body.gender,
         dob: req.body.dob,
         age: req.body.age,
