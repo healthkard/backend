@@ -88,9 +88,13 @@ router.post('/', async (req, res) => {
 router.put('/:healthId', async (req, res) => {
     const { healthId } = req.params;
     const { payment } = req.body;
+    console.log({ healthId, payment });
     try {
         if (payment) {
             await renewUser(healthId, payment, res);
+        } else {
+            const updatedUser = await User.findOneAndUpdate({ healthId }, req.body, { new: true });
+            res.status(200).json(updatedUser);
         }
     } catch (error) {
         console.log({ error });

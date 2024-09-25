@@ -144,4 +144,27 @@ router.post('/check-number', async (req, res) => {
     }
 });
 
+// Send password to email
+router.post('/send-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Check if the email exists
+        const user = await MobileUser.findOne({ email });
+        if (!user) {
+            return res.status(404).send({ message: 'User not found with this email' });
+        }
+
+        // Send email with the temporary password
+        const emailHtml = `<p>Your temporary password is: <strong>${user.password}</strong></p>
+                           <p>Please change your password after logging in.</p>`;
+        await sendMail(email, 'Your Temporary Password for Healthkard', 'Temporary Password', emailHtml);
+
+        res.status(200).send({ message: 'Password sent to your email' });
+    } catch (error) {
+        console.error('Error sending password:', error);
+        res.status(500).send({ message: 'Failed to send password', error: error.message });
+    }
+});
+
 module.exports = router;
