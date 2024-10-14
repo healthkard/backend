@@ -7,7 +7,8 @@ const hospitalRouter = require('./routers/hospitals');
 const agentsRouter = require('./routers/agents');
 const authRouter = require('./routers/auth');
 const paymentRouter = require('./routers/payment');
-
+const recordsRouter = require('./routers/records');
+const mobileRouter = require('./routers/mobile');
 require('dotenv').config();
 
 const corsOptions = {
@@ -33,3 +34,5 @@ app.use('/hospitals', hospitalRouter);
 app.use('/agents', agentsRouter);
 app.use('/auth', authRouter);
 app.use('/pay', paymentRouter);
+app.use('/records', recordsRouter);
+app.use('/mobile', mobileRouter);

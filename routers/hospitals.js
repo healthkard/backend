@@ -66,6 +66,18 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/hospital/:id', async (req, res) => {
+    try {
+        const hospital = await Hospital.findById(req.params.id);
+        if (hospital == null) {
+            return res.status(404).json({ message: 'Hospital not found' });
+        }
+        res.status(200).json(hospital);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Update a hospital by ID
 router.patch('/:id', async (req, res) => {
     const updates = Object.keys(req.body);

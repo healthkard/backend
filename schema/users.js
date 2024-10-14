@@ -29,7 +29,8 @@ const userSchema = new mongoose.Schema({
         hospitalName: { type: String, required: false },
         lastVisit: { type: Date, default: Date.now },
         frequency: { type: Number, default: 0 },
-    }]
+    }],
+    records: [{ type: String, default: null }]
 });
 
 const User = mongoose.model('User', userSchema);
