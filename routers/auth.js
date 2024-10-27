@@ -74,7 +74,6 @@ router.post('/agent-login', async (req, res) => {
 router.post('/send-otp', async (req, res) => {
     try {
         const { email, userName } = req.body;
-        console.log({ email, userName })
         const otpCode = getOTP();
         const emailHtml = otpTemplate(userName, otpCode);
         await sendMail(email, 'Your OTP for Healthkard Verification', 'OTP verification', emailHtml);

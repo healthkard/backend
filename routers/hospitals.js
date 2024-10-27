@@ -70,9 +70,8 @@ router.get('/', async (req, res) => {
 
 router.get('/hospital/:id', async (req, res) => {
     const hospitalId = req.params.id;
-    console.log(typeof hospitalId);
 
-    try { 
+    try {
         const hospital = await Hospital.findOne({ _id: hospitalId });
         if (hospital == null) {
             return res.status(404).json({ message: 'Hospital not found' });
@@ -203,6 +202,7 @@ router.delete('/:id', async (req, res) => {
         }
         res.status(200).send(hospital);
     } catch (error) {
+        console.log(error);
         res.status(500).send(error);
     }
 });

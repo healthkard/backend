@@ -9,6 +9,7 @@ const authRouter = require('./routers/auth');
 const paymentRouter = require('./routers/payment');
 const recordsRouter = require('./routers/records');
 const mobileRouter = require('./routers/mobile');
+const emailsRouter = require('./routers/emails');
 const paymentsRouter = require('./routers/payments');
 require('dotenv').config();
 
@@ -38,3 +39,4 @@ app.use('/pay', paymentRouter);
 app.use('/records', recordsRouter);
 app.use('/payments', paymentsRouter);
 app.use('/mobile', mobileRouter);
+app.use('/emails', emailsRouter);
