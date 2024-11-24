@@ -30,8 +30,9 @@ router.post('/user-login', async (req, res) => {
         const user = await MobileUser.findOne({ number });
         if (user) {
             if (password === user.password) {
-                res.status(200).send({ message: 'Verified', healthId: user.healthId, id: user._id, name: user.name });
+                res.status(200).send({ message: 'Verified', healthId: user.healthId, id: user._id, name: user.name, email: user.email });
             } else {
+                console.log('Password incorrect');
                 res.status(400).send({ message: 'Password incorrect' });
             }
         } else {
@@ -44,9 +45,9 @@ router.post('/user-login', async (req, res) => {
 
 // Agent login
 router.post('/agent-login', async (req, res) => {
+
     try {
         const { email, password } = req.body;
-
         // Find the agent by email
         const agent = await Agent.findOne({ email });
         if (!agent) {

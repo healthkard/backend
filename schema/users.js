@@ -3,15 +3,15 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     healthId: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    image: { type: String, required: true },
+    image: { type: String, required: false },
     email: { type: String },
     number: { type: String, required: true },
     dob: { type: Date, required: true, default: Date.now },
-    gender: { type: String, required: true },
+    gender: { type: String, required: true, default: 'male' },
     age: { type: String, required: false },
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    pincode: { type: String, required: true },
+    address: { type: String, required: false },
+    city: { type: String, required: false },
+    pincode: { type: String, required: false },
     dateJoined: { type: Date, default: Date.now },
     startDate: { type: Date },
     expireDate: { type: Date, default: Date.now },
@@ -30,7 +30,8 @@ const userSchema = new mongoose.Schema({
         lastVisit: { type: Date, default: Date.now },
         frequency: { type: Number, default: 0 },
     }],
-    records: [{ type: String, default: null }]
+    records: [{ type: String, default: null }],
+    registered: { type: Boolean, default: false }
 });
 
 const User = mongoose.model('User', userSchema);

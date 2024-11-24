@@ -24,13 +24,11 @@ router.get('/', async (req, res) => {
             } else {
                 numberFormats.push(number);
             }
-            query.number = { $in: numberFormats };
+            query.number = { $in: numberFormats, registered: true };
         }
         const users = await User.find(query)
             .skip(skip)
             .limit(Number(limit));
-
-        // console.log({ users })
         const totalUsers = await User.countDocuments(query);
         res.status(200).json({
             users,
@@ -51,6 +49,34 @@ router.get('/user/:id', async (req, res) => {
         }
         res.status(200).json(user);
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/unregistered/:number', async (req, res) => {
+    try {
+        let user = await User.findOne({ number: req.params.number });
+        if (!user) {
+            user = new User({
+                healthId: generateYearPrefixedNumber('HK'),
+                name: 'xyz',
+                number: req.params.number,
+                registered: false
+            });
+            await user.save();
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.put('/unregistered/:number', async (req, res) => {
+    try {
+        await User.findOneAndUpdate({ number: req.params.number, registered: false }, req.body);
+        res.status(200).json({ message: 'User registered' });
+    } catch (error) {
+        console.log({ error });
         res.status(500).json({ message: error.message });
     }
 });
@@ -100,7 +126,6 @@ router.post('/', async (req, res) => {
 router.put('/:healthId', async (req, res) => {
     const { healthId } = req.params;
     const { payment } = req.body;
-    console.log({ healthId, payment });
     try {
         if (payment) {
             await renewUser(healthId, payment, res);
