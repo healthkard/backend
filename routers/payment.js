@@ -13,15 +13,14 @@ const SERVER_URL = process.env.SERVER_URL || 'https://localhost:3002';
 
 // Payment initiation route
 router.get('/', (req, res) => {
-    const { number, amount } = req.query;
-    console.log({ number, amount, params: req.query })
+    const { number, amount, healthId } = req.query;
     if (!number || !amount) {
         return res.status(400).send({ message: "number and amount are required" });
     }
 
     const payEndPoint = '/pg/v1/pay';
     let merchantTransactionId = uniqid();
-    let merchantUserId = "MUID123";
+    let merchantUserId = healthId;
 
     const payload = {
         "merchantId": MERCHANT_ID,
@@ -35,8 +34,6 @@ router.get('/', (req, res) => {
             "type": "PAY_PAGE"
         }
     };
-
-    console.log("Payload before encoding:", payload);
 
     let bufferObj = Buffer.from(JSON.stringify(payload), "utf8");
     let base64EncodedPayload = bufferObj.toString("base64");
@@ -55,14 +52,12 @@ router.get('/', (req, res) => {
         }
     };
 
-    console.log("Request options:", options);
 
     axios
         .request(options)
         .then(response => {
             const url = response.data.data.instrumentResponse.redirectInfo.url;
-            console.log("Redirect URL:", url);
-            res.redirect(url);
+            res.json({ paymentUrl: url, merchantTransactionId });
         })
         .catch(error => {
             console.error("Error during payment initiation:", error);

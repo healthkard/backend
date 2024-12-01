@@ -28,23 +28,8 @@ router.get('/:id/users-added', async (req, res) => {
 // Get all agents with pagination
 router.get('/', async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const startIndex = (page - 1) * limit;
-
-        const totalAgents = await Agent.countDocuments();
-        const agents = await Agent.find()
-            .skip(startIndex)
-            .limit(limit);
-
-        const pagination = {
-            currentPage: page,
-            totalPages: Math.ceil(totalAgents / limit),
-            totalItems: totalAgents,
-            itemsPerPage: limit
-        };
-
-        res.json({ agents: agents.reverse(), pagination });
+        const agents = await Agent.find();
+        res.json(agents.reverse());
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -7,11 +7,9 @@ const { renewUser } = require('../middleware/user/payment');
 
 const router = express.Router();
 
-
 router.get('/', async (req, res) => {
     try {
-        const { healthId, number, page = 1, limit = 10 } = req.query;
-        const skip = (page - 1) * limit;
+        const { healthId, number } = req.query;
 
         let query = {};
         if (healthId) {
@@ -24,17 +22,11 @@ router.get('/', async (req, res) => {
             } else {
                 numberFormats.push(number);
             }
-            query.number = { $in: numberFormats, registered: true };
+            query.number = { $in: numberFormats };
         }
-        const users = await User.find(query)
-            .skip(skip)
-            .limit(Number(limit));
-        const totalUsers = await User.countDocuments(query);
+        const users = await User.find({ ...query });
         res.status(200).json({
-            users,
-            currentPage: Number(page),
-            totalPages: Math.ceil(totalUsers / limit),
-            totalUsers
+            users
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -14,13 +14,14 @@ router.post('/new-user', async (req, res) => {
         const { name, email, password, number } = req.body;
         const users = await MobileUser.find({ number });
         if (users.length) {
-            res.status(200).send({ message: 'user already exist' });
+            res.status(200).send({ message: 'User already exist', status: 200 });
+        } else {
+            const newUser = new MobileUser({ name, email, password, number });
+            await newUser.save();
+            res.status(200).send({ message: 'User created successfully', status: 200 });
         }
-        const newUser = new MobileUser({ name, email, password, number });
-        await newUser.save();
-        res.status(201).send(newUser);
     } catch (error) {
-        res.status(400).send({ message: 'Something went wrong' });
+        res.status(400).send({ message: 'Something went wrong', status: 400 });
     }
 });
 // Login a user
@@ -30,16 +31,15 @@ router.post('/user-login', async (req, res) => {
         const user = await MobileUser.findOne({ number });
         if (user) {
             if (password === user.password) {
-                res.status(200).send({ message: 'Verified', healthId: user.healthId, id: user._id, name: user.name, email: user.email });
+                res.status(200).send({ message: 'Login successful', healthId: user.healthId, id: user._id, name: user.name, email: user.email, status: 200 });
             } else {
-                console.log('Password incorrect');
-                res.status(400).send({ message: 'Password incorrect' });
+                res.status(400).send({ message: 'Password incorrect', status: 400 });
             }
         } else {
-            res.status(404).send({ message: 'User not found' });
+            res.status(404).send({ message: 'User not found', status: 404 });
         }
     } catch (error) {
-        res.status(500).send({ message: 'Something wents wrong' });
+        res.status(500).send({ message: 'Something wents wrong', status: 500 });
     }
 });
 
