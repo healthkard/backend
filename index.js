@@ -14,7 +14,7 @@ const paymentsRouter = require('./routers/payments');
 require('dotenv').config();
 
 const corsOptions = {
-    origin: '*',
+    origin: 'https://healthkard.in',
     credentials: true,
     optionsSuccessStatus: 200
 }
