@@ -14,7 +14,9 @@ const paymentsRouter = require('./routers/payments');
 require('dotenv').config();
 
 const corsOptions = {
-    origin: 'https://healthkard.in',
+    origin: ['https://healthkard.in', 'https://backend-green-tau.vercel.app'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
     optionsSuccessStatus: 200
 }
