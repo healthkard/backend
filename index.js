@@ -16,28 +16,54 @@ require('dotenv').config();
 const allowedOrigins = [
     'http://healthkard.in',
     'http://www.healthkard.in',
+    'https://healthkard.in',
+    'https://www.healthkard.in',
     'https://backend-green-tau.vercel.app',
     'http://localhost:3000',
     'http://localhost:3002'
 ];
 
-// Simplify the CORS configuration by using the cors middleware directly
+// Add logging to help debug CORS issues
+app.use((req, res, next) => {
+    console.log('Incoming request from origin:', req.headers.origin);
+    next();
+});
+
 const corsOptions = {
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin || allowedOrigins.includes(origin)) {
+        console.log('Request origin:', origin);
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
+            console.log('Origin not allowed:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+    exposedHeaders: ['Access-Control-Allow-Origin'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 };
 
-// Remove the custom middleware and use cors with options
+// Apply CORS middleware
 app.use(cors(corsOptions));
+
+// Add a pre-flight route handler
+app.options('*', cors(corsOptions));
+
+// Add headers middleware as a backup
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    next();
+});
 
 // middlewares
 app.use(express.json());
