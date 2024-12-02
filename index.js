@@ -13,13 +13,36 @@ const emailsRouter = require('./routers/emails');
 const paymentsRouter = require('./routers/payments');
 require('dotenv').config();
 
+const allowedOrigins = [
+    'http://healthkard.in',
+    'http://www.healthkard.in',
+    'https://healthkard.in',
+    'https://www.healthkard.in'
+];
+
+// Middleware to set CORS headers dynamically
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    next();
+});
+
+// CORS options
 const corsOptions = {
-    origin: 'https://healthkard.in',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
-    optionsSuccessStatus: 200
-}
+};
 // middlewares
 app.use(cors(corsOptions));
 app.use(express.json());
