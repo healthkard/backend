@@ -16,25 +16,15 @@ require('dotenv').config();
 const allowedOrigins = [
     'http://healthkard.in',
     'http://www.healthkard.in',
-    'https://healthkard.in',
-    'https://www.healthkard.in'
+    'https://backend-green-tau.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3002'
 ];
 
-// Middleware to set CORS headers dynamically
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    next();
-});
-
-// CORS options
+// Simplify the CORS configuration by using the cors middleware directly
 const corsOptions = {
     origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -42,9 +32,14 @@ const corsOptions = {
         }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
 };
-// middlewares
+
+// Remove the custom middleware and use cors with options
 app.use(cors(corsOptions));
+
+// middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
