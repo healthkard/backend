@@ -20,7 +20,9 @@ const allowedOrigins = [
     'https://www.healthkard.in',
     'https://backend-green-tau.vercel.app',
     'http://localhost:3000',
-    'http://localhost:3002'
+    'http://localhost:3002',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3002',
 ];
 
 // Add logging to help debug CORS issues

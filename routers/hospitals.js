@@ -22,12 +22,9 @@ router.post('/', async (req, res) => {
         res.status(400).send(error);
     }
 });
-
 router.get('/', async (req, res) => {
     try {
-        const { hospitalId, page = 1, limit = 10, service, city } = req.query;
-        const skip = (page - 1) * limit;
-
+        const { hospitalId, service, city } = req.query;
         let query = {};
 
         if (hospitalId) {
@@ -50,18 +47,10 @@ router.get('/', async (req, res) => {
             delete query.$or;
         }
 
-        const hospitals = await Hospital.find(query)
-            .skip(skip)
-            .limit(Number(limit));
-
-        const totalHospitals = await Hospital.countDocuments(query);
-
+        const hospitals = await Hospital.find(query);
 
         res.status(200).json({
-            hospitals,
-            currentPage: Number(page),
-            totalPages: Math.ceil(totalHospitals / limit),
-            totalHospitals
+            hospitals
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -25,6 +25,11 @@ router.get('/', async (req, res) => {
             query.number = { $in: numberFormats };
         }
         const users = await User.find({ ...query });
+        // Update all users to be registered
+        // users.forEach(user => {
+        //     user.registered = true;
+        // });
+        // await Promise.all(users.map(user => user.save()));
         res.status(200).json({
             users
         });

@@ -33,10 +33,10 @@ router.post('/user-login', async (req, res) => {
             if (password === user.password) {
                 res.status(200).send({ message: 'Login successful', healthId: user.healthId, id: user._id, name: user.name, email: user.email, status: 200 });
             } else {
-                res.status(400).send({ message: 'Password incorrect', status: 400 });
+                res.status(201).send({ message: 'Password incorrect', status: 201 });
             }
         } else {
-            res.status(404).send({ message: 'User not found', status: 404 });
+            res.send({ message: 'User not found', status: 404 });
         }
     } catch (error) {
         res.status(500).send({ message: 'Something wents wrong', status: 500 });
@@ -160,7 +160,7 @@ router.post('/send-password', async (req, res) => {
                            <p>Please change your password after logging in.</p>`;
         await sendMail(email, 'Your Temporary Password for Healthkard', 'Temporary Password', emailHtml);
 
-        res.status(200).send({ message: 'Password sent to your email' });
+        res.status(200).send({ message: 'Password sent to your email', status: 200 });
     } catch (error) {
         console.error('Error sending password:', error);
         res.status(500).send({ message: 'Failed to send password', error: error.message });
