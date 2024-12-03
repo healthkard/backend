@@ -3,6 +3,7 @@ const axios = require('axios');
 const sha256 = require('sha256');
 const uniqid = require('uniqid');
 const router = express.Router();
+const User = require('../schema/users'); // Import the User model
 
 // Environment variables
 const PHONE_PE_HOST_URL = process.env.PHONE_PE_HOST_URL || 'https://api.phonepe.com/apis/hermes';
@@ -13,13 +14,13 @@ const SERVER_URL = process.env.SERVER_URL || 'https://localhost:3002';
 
 // Payment initiation route
 router.get('/', (req, res) => {
-    const { number, amount, healthId } = req.query;
-    if (!number || !amount) {
-        return res.status(400).send({ message: "number and amount are required" });
+    const { number, amount, healthId, plan } = req.query;
+    if (!number || !amount || !plan) {
+        return res.status(400).send({ message: "number, amount, and plan are required" });
     }
 
     const payEndPoint = '/pg/v1/pay';
-    let merchantTransactionId = uniqid();
+    let merchantTransactionId = `${uniqid()}_${Buffer.from(JSON.stringify({ plan, healthId })).toString('base64')}`;
     let merchantUserId = healthId;
 
     const payload = {
@@ -72,10 +73,13 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
 
     if (merchantTransactionId) {
         try {
-            const xVerify = sha256(`/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}` + SALT_KEY) + "###" + SALT_INDEX;
+            const [transactionId, encodedMetadata] = merchantTransactionId.split('_');
+            const metadata = JSON.parse(Buffer.from(encodedMetadata, 'base64').toString());
+
+            const xVerify = sha256(`/pg/v1/status/${MERCHANT_ID}/${transactionId}` + SALT_KEY) + "###" + SALT_INDEX;
             const options = {
                 method: 'get',
-                url: `${PHONE_PE_HOST_URL}/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}`,
+                url: `${PHONE_PE_HOST_URL}/pg/v1/status/${MERCHANT_ID}/${transactionId}`,
                 headers: {
                     accept: 'application/json',
                     'Content-Type': 'application/json',
@@ -86,10 +90,22 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
 
             const response = await axios.request(options);
 
-            if (response.data.code === "PAYMENT_SUCCESS") {
+            const paymentStatus = response.data.code === "PAYMENT_SUCCESS";
+            const paymentRecord = {
+                amount: response.data.data.amount / 100,
+                plan: metadata.plan,
+                transactionId: transactionId,
+                paymentStatus: paymentStatus
+            };
+
+            await User.findOneAndUpdate(
+                { healthId: metadata.healthId },
+                { $push: { payments: paymentRecord } }
+            );
+
+            if (paymentStatus) {
                 res.status(200).send("Payment successful");
             } else {
-                console.log("Payment failed:", response.data);
                 res.status(400).send("Payment failed");
             }
         } catch (error) {
