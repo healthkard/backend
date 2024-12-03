@@ -10,17 +10,17 @@ const PHONE_PE_HOST_URL = process.env.PHONE_PE_HOST_URL || 'https://api.phonepe.
 const MERCHANT_ID = process.env.MERCHANT_ID || 'M22ASHHJBIPRV';
 const SALT_INDEX = process.env.SALT_INDEX || 1;
 const SALT_KEY = process.env.SALT_KEY || '52f31ab0-0b15-46b9-bb64-b9aebcecc876';
-const SERVER_URL = process.env.SERVER_URL || 'https://backend-green-tau.vercel.app';
+const SERVER_URL = process.env.SERVER_URL || 'https://localhost:3002';
 
 // Payment initiation route
 router.get('/', (req, res) => {
-    const { number, amount, healthId, plan } = req.query;
+    const { number, amount, healthId } = req.query;
     if (!number || !amount) {
-        return res.status(400).send({ message: "number, amount, and plan are required" });
+        return res.status(400).send({ message: "number and amount are required" });
     }
 
     const payEndPoint = '/pg/v1/pay';
-    let merchantTransactionId = `${uniqid()}_${Buffer.from(JSON.stringify({ plan, healthId })).toString('base64')}`;
+    let merchantTransactionId = uniqid();
     let merchantUserId = healthId;
 
     const payload = {
@@ -73,13 +73,10 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
 
     if (merchantTransactionId) {
         try {
-            const [transactionId, encodedMetadata] = merchantTransactionId.split('_');
-            const metadata = JSON.parse(Buffer.from(encodedMetadata, 'base64').toString());
-
-            const xVerify = sha256(`/pg/v1/status/${MERCHANT_ID}/${transactionId}` + SALT_KEY) + "###" + SALT_INDEX;
+            const xVerify = sha256(`/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}` + SALT_KEY) + "###" + SALT_INDEX;
             const options = {
                 method: 'get',
-                url: `${PHONE_PE_HOST_URL}/pg/v1/status/${MERCHANT_ID}/${transactionId}`,
+                url: `${PHONE_PE_HOST_URL}/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}`,
                 headers: {
                     accept: 'application/json',
                     'Content-Type': 'application/json',
@@ -92,14 +89,15 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
 
             const paymentStatus = response.data.code === "PAYMENT_SUCCESS";
             const paymentRecord = {
-                amount: response.data.data.amount / 100,
-                plan: metadata.plan || '1 month',
-                transactionId: transactionId,
+                amount: response.data.data.amount / 100, // Assuming amount is in paise
+                plan: '1 month', // You can adjust this based on your logic
+                transactionId: merchantTransactionId,
                 paymentStatus: paymentStatus
             };
 
+            // Find the user by merchantUserId (healthId) and update their payments
             await User.findOneAndUpdate(
-                { healthId: metadata.healthId },
+                { healthId: response.data.data.merchantUserId },
                 { $push: { payments: paymentRecord } }
             );
 
