@@ -10,12 +10,12 @@ const PHONE_PE_HOST_URL = process.env.PHONE_PE_HOST_URL || 'https://api.phonepe.
 const MERCHANT_ID = process.env.MERCHANT_ID || 'M22ASHHJBIPRV';
 const SALT_INDEX = process.env.SALT_INDEX || 1;
 const SALT_KEY = process.env.SALT_KEY || '52f31ab0-0b15-46b9-bb64-b9aebcecc876';
-const SERVER_URL = process.env.SERVER_URL || 'https://localhost:3002';
+const SERVER_URL = process.env.SERVER_URL || 'https://backend-green-tau.vercel.app';
 
 // Payment initiation route
 router.get('/', (req, res) => {
     const { number, amount, healthId, plan } = req.query;
-    if (!number || !amount || !plan) {
+    if (!number || !amount) {
         return res.status(400).send({ message: "number, amount, and plan are required" });
     }
 
@@ -93,7 +93,7 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
             const paymentStatus = response.data.code === "PAYMENT_SUCCESS";
             const paymentRecord = {
                 amount: response.data.data.amount / 100,
-                plan: metadata.plan,
+                plan: metadata.plan || '1 month',
                 transactionId: transactionId,
                 paymentStatus: paymentStatus
             };
