@@ -40,8 +40,8 @@ const AgentSchema = new mongoose.Schema({
         },
         plan: {
             type: String,
-            enum: ['1 month', '3 months', '6 months', '1 year'],
-            default: '1 month'
+            enum: ['Monthly', 'Quarterly', 'Half Yearly', 'Yearly'],
+            default: 'Monthly'
         }
     }],
     hospitalsAdded: [{

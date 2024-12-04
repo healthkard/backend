@@ -21,6 +21,7 @@ router.post('/new-user', async (req, res) => {
             res.status(200).send({ message: 'User created successfully', status: 200 });
         }
     } catch (error) {
+        console.log(error)
         res.status(400).send({ message: 'Something went wrong', status: 400 });
     }
 });

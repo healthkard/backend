@@ -35,4 +35,13 @@ async function sendMail(to, subject, text, html) {
     return info.messageId;
 }
 
-module.exports = { sendMail };
+async function sendSupportMail(to, subject, text) {
+    const info = await transporter.sendMail({
+        to: to || "healthkard99@gmail.com",
+        subject: subject || "Support Mail",
+        text: text || "Support Mail",
+    })
+    return info.messageId;
+}
+
+module.exports = { sendMail, sendSupportMail };
