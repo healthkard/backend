@@ -11,7 +11,7 @@ const PHONE_PE_HOST_URL = process.env.PHONE_PE_HOST_URL || 'https://api.phonepe.
 const MERCHANT_ID = process.env.MERCHANT_ID || 'M22ASHHJBIPRV';
 const SALT_INDEX = process.env.SALT_INDEX || 1;
 const SALT_KEY = process.env.SALT_KEY || '52f31ab0-0b15-46b9-bb64-b9aebcecc876';
-const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3002';
+const SERVER_URL = process.env.SERVER_URL || 'https://backend-green-tau.vercel.app';
 
 // Payment initiation route
 router.get('/', (req, res) => {
