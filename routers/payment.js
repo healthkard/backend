@@ -76,6 +76,7 @@ router.get('/', (req, res) => {
 router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
     const { merchantTransactionId, healthId, plan, agent, userName, type } = req.query;
     if (merchantTransactionId) {
+        t
         try {
             const xVerify = sha256(`/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}` + SALT_KEY) + "###" + SALT_INDEX;
             const options = {
@@ -106,57 +107,44 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
                 { $push: { payments: paymentRecord } }
             );
             if (paymentStatus) {
+                // First get the current user to check their expireDate
+                const user = await User.findOne({ healthId: healthId });
+
+                // Calculate days to add based on plan
+                let daysToAdd = 28; // Default to monthly
+                switch (plan) {
+                    case 'Monthly':
+                        daysToAdd = 28;
+                        break;
+                    case 'Quarterly':
+                        daysToAdd = 84;
+                        break;
+                    case 'Half Yearly':
+                        daysToAdd = 168;
+                        break;
+                    case 'Yearly':
+                        daysToAdd = 336;
+                        break;
+                }
+
+                // Calculate new expire date
+                const now = new Date();
+                let newExpireDate;
+
+                if (!user.expireDate || user.expireDate < now) {
+                    // If expired or no date, start from now
+                    newExpireDate = new Date(now.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
+                } else {
+                    // If not expired, add to existing date
+                    newExpireDate = new Date(user.expireDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
+                }
+
+                // Update the user with new expire date
                 await User.findOneAndUpdate(
                     { healthId: healthId },
                     {
                         $set: {
-                            expireDate: {
-                                $cond: {
-                                    if: { $lt: ["$expireDate", new Date()] },
-                                    then: {
-                                        $add: [
-                                            new Date(),
-                                            {
-                                                $multiply: [
-                                                    {
-                                                        $switch: {
-                                                            branches: [
-                                                                { case: { $eq: ["Monthly", plan] }, then: 28 },
-                                                                { case: { $eq: ["Quarterly", plan] }, then: 84 },
-                                                                { case: { $eq: ["Half Yearly", plan] }, then: 168 },
-                                                                { case: { $eq: ["Yearly", plan] }, then: 336 }
-                                                            ],
-                                                            default: 28
-                                                        }
-                                                    },
-                                                    24 * 60 * 60 * 1000
-                                                ]
-                                            }
-                                        ]
-                                    },
-                                    else: {
-                                        $add: [
-                                            "$expireDate",
-                                            {
-                                                $multiply: [
-                                                    {
-                                                        $switch: {
-                                                            branches: [
-                                                                { case: { $eq: ["Monthly", plan] }, then: 28 },
-                                                                { case: { $eq: ["Quarterly", plan] }, then: 84 },
-                                                                { case: { $eq: ["Half Yearly", plan] }, then: 168 },
-                                                                { case: { $eq: ["Yearly", plan] }, then: 336 }
-                                                            ],
-                                                            default: 28
-                                                        }
-                                                    },
-                                                    24 * 60 * 60 * 1000
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
+                            expireDate: newExpireDate
                         }
                     }
                 );
