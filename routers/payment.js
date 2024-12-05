@@ -76,7 +76,7 @@ router.get('/', (req, res) => {
 router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
     const { merchantTransactionId, healthId, plan, agent, userName, type } = req.query;
     if (merchantTransactionId) {
-        t
+
         try {
             const xVerify = sha256(`/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}` + SALT_KEY) + "###" + SALT_INDEX;
             const options = {
