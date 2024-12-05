@@ -113,6 +113,9 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
                     { healthId: healthId },
                     { $push: { payments: paymentRecord } }
                 );
+            } else {
+                res.status(400).send({ message: 'Payment already exists' });
+                return;
             }
             if (paymentStatus) {
                 // First get the current user to check their expireDate
