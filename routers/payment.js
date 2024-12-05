@@ -102,10 +102,18 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
             };
 
             // Find the user by merchantUserId (healthId) and update their payments
-            await User.findOneAndUpdate(
-                { healthId: healthId },
-                { $push: { payments: paymentRecord } }
-            );
+            // Check if payment with this transactionId already exists
+            const existingPayment = await User.findOne({
+                healthId: healthId,
+                'payments.transactionId': merchantTransactionId
+            });
+
+            if (!existingPayment) {
+                await User.findOneAndUpdate(
+                    { healthId: healthId },
+                    { $push: { payments: paymentRecord } }
+                );
+            }
             if (paymentStatus) {
                 // First get the current user to check their expireDate
                 const user = await User.findOne({ healthId: healthId });
