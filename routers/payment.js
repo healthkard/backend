@@ -24,18 +24,22 @@ router.get('/', (req, res) => {
     let merchantTransactionId = uniqid();
     let merchantUserId = healthId;
 
+    const redirectUrl = `https://backend-green-tau.vercel.app/pay/redirect-url/${merchantTransactionId}/?merchantTransactionId=${merchantTransactionId}&&healthId=${healthId}&&plan=${plan}&&agent=${agent}&&userName=${userName}&&type=${type}`;
+
     const payload = {
         "merchantId": MERCHANT_ID,
         "merchantTransactionId": merchantTransactionId,
         "merchantUserId": merchantUserId,
         "amount": amount * 100,
-        "redirectUrl": `${SERVER_URL}/pay/redirect-url/${merchantTransactionId}/?merchantTransactionId=${merchantTransactionId}&&healthId=${healthId}&&plan=${plan}&&agent=${agent}&&userName=${userName}&&type=${type}`,
+        "redirectUrl": redirectUrl,
         "redirectMode": "GET",
         "number": number,
         "paymentInstrument": {
             "type": "PAY_PAGE"
         },
     };
+
+    console.log('Redirect URL:', redirectUrl);
 
     let bufferObj = Buffer.from(JSON.stringify(payload), "utf8");
     let base64EncodedPayload = bufferObj.toString("base64");
