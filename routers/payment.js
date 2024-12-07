@@ -11,11 +11,17 @@ const PHONE_PE_HOST_URL = process.env.PHONE_PE_HOST_URL || 'https://api.phonepe.
 const MERCHANT_ID = process.env.MERCHANT_ID || 'M22ASHHJBIPRV';
 const SALT_INDEX = process.env.SALT_INDEX || 1;
 const SALT_KEY = process.env.SALT_KEY || '52f31ab0-0b15-46b9-bb64-b9aebcecc876';
+
 const SERVER_URL = process.env.SERVER_URL || 'https://backend-green-tau.vercel.app';
+const HOST_ADDRESS = process.env.HOST_ADDRESS || 'https://healthkard.in';
+
+// const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3002';
+// const HOST_ADDRESS = process.env.HOST_ADDRESS || 'http://localhost:3000';
+
 
 // Payment initiation route
 router.get('/', (req, res) => {
-    const { number, amount, healthId, plan, agent, userName, type } = req.query;
+    const { number, amount, healthId, plan, agent, userName, type, userId } = req.query;
     if (!number || !amount || !healthId) {
         return res.status(400).send({ message: "number and amount are required" });
     }
@@ -24,8 +30,8 @@ router.get('/', (req, res) => {
     let merchantTransactionId = uniqid();
     let merchantUserId = healthId;
 
-    const redirectUrl = `https://backend-green-tau.vercel.app/pay/redirect-url/${merchantTransactionId}/?merchantTransactionId=${merchantTransactionId}&&healthId=${healthId}&&plan=${plan}&&agent=${agent}&&userName=${userName}&&type=${type}`;
-
+    const callbackUrl = `${HOST_ADDRESS}/profile/${userId}`;
+    const redirectUrl = `${SERVER_URL}/pay/redirect-url/${merchantTransactionId}/?merchantTransactionId=${merchantTransactionId}&&healthId=${healthId}&&plan=${plan}&&agent=${agent}&&userName=${userName}&&type=${type}&callbackUrl=${callbackUrl}`;
     const payload = {
         "merchantId": MERCHANT_ID,
         "merchantTransactionId": merchantTransactionId,
@@ -33,13 +39,12 @@ router.get('/', (req, res) => {
         "amount": amount * 100,
         "redirectUrl": redirectUrl,
         "redirectMode": "GET",
-        "number": number,
+        "mobileNumber": number,
+        "callbackUrl": callbackUrl,
         "paymentInstrument": {
             "type": "PAY_PAGE"
         },
     };
-
-    console.log('Redirect URL:', redirectUrl);
 
     let bufferObj = Buffer.from(JSON.stringify(payload), "utf8");
     let base64EncodedPayload = bufferObj.toString("base64");
@@ -74,7 +79,7 @@ router.get('/', (req, res) => {
 
 // Payment status check route
 router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
-    const { merchantTransactionId, healthId, plan, agent, userName, type } = req.query;
+    const { merchantTransactionId, healthId, plan, agent, userName, type, callbackUrl } = req.query;
     if (merchantTransactionId) {
 
         try {
@@ -175,9 +180,9 @@ router.get("/redirect-url/:merchantTransactionId", async (req, res) => {
                         }
                     );
                 }
-                res.status(200).sendFile('Success.html', { root: './helpers/Payment' });
+                res.status(200).redirect(callbackUrl);
             } else {
-                res.status(400).sendFile('Failure.html', { root: './helpers/Payment' });
+                res.status(400).redirect(callbackUrl);
             }
         } catch (error) {
             console.error("Error during payment status check:", error);

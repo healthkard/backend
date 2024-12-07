@@ -122,14 +122,15 @@ router.post('/', async (req, res) => {
 
 router.put('/:healthId', async (req, res) => {
     const { healthId } = req.params;
-    const { payment } = req.body;
+    console.log({ healthId, body: req.body });
     try {
-        if (payment) {
-            await renewUser(healthId, payment, res);
-        } else {
-            const updatedUser = await User.findOneAndUpdate({ healthId }, req.body, { new: true });
-            res.status(200).json(updatedUser);
+        const user = await User.findOne({ healthId });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+        user.set(req.body);
+        await user.save();
+        res.status(200).json({ user, status: 200 });
     } catch (error) {
         console.log({ error });
         res.status(400).json({ message: error.message });
