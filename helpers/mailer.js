@@ -4,14 +4,17 @@ require('dotenv').config({ path: '../.env' });
 const transporter = nodemailer.createTransport({
 
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
+    service: "gmail",
+    debug: true,
+    logger: true,
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.EMAIL || 'healthkard99@gmail.com',
         pass: process.env.PASS || 'fwur nwxk ucze jgiy'
     },
     tls: {
-        rejectUnauthorized: false
+        rejectUnauthorized: true
     },
 });
 
@@ -37,6 +40,7 @@ async function sendMail(to, subject, text, html) {
 
 async function sendSupportMail(to, subject, text) {
     const info = await transporter.sendMail({
+        from: '"Healthkard" <healthkard99@gmail.com>',
         to: to || "healthkard99@gmail.com",
         subject: subject || "Support Mail",
         text: text || "Support Mail",
