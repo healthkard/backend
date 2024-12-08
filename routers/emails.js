@@ -15,7 +15,7 @@ router.post('/send-social-media-links-agent', async (req, res) => {
 
 router.post('/send-support-mail', async (req, res) => {
     const { name, email, message } = req.body;
-    console.log(req.body)
+
     try {
         if (!name || !email || !message) {
             return res.status(400).send({ message: 'Name, email, and message are required' })

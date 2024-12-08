@@ -157,9 +157,9 @@ router.post('/send-password', async (req, res) => {
         }
 
         // Send email with the temporary password
-        const emailHtml = `<p>Your temporary password is: <strong>${user.password}</strong></p>
+        const emailHtml = `<p>Your permanent password is: <strong>${user.password}</strong></p>
                            <p>Please change your password after logging in.</p>`;
-        await sendMail(email, 'Your Temporary Password for Healthkard', 'Temporary Password', emailHtml);
+        await sendMail(email, 'Your Permanent Password for Healthkard', 'Permanent Password', emailHtml);
 
         res.status(200).send({ message: 'Password sent to your email', status: 200 });
     } catch (error) {
