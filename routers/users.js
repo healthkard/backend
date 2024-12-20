@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
             }
             query.number = { $in: numberFormats };
         }
-        const users = await User.find({ ...query });
+        const users = await User.find({ ...query }).sort({ createdDate: -1 });
         // Update all users to be registered
         // users.forEach(user => {
         //     user.registered = true;
@@ -122,7 +122,6 @@ router.post('/', async (req, res) => {
 
 router.put('/:healthId', async (req, res) => {
     const { healthId } = req.params;
-    console.log({ healthId, body: req.body });
     try {
         const user = await User.findOne({ healthId });
         if (!user) {
@@ -150,3 +149,19 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
+
+//statistics
+router.get('/statistics', async (req, res) => {
+    const users = await User.find({});
+    const today = new Date();
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const totalUsers = await User.countDocuments({});
+    res.status(200).json({
+        users: [
+            { label: 'Today’s users count', value: users.filter(user => new Date(user.dateJoined) >= today).length },
+            { label: 'This month’s users count', value: users.filter(user => new Date(user.dateJoined) >= thisMonth).length },
+            { label: 'Total users count', value: totalUsers }
+        ]
+    });
+});

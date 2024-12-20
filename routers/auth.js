@@ -168,4 +168,20 @@ router.post('/send-password', async (req, res) => {
     }
 });
 
+// Admin login
+router.post('/admin-login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (email === 'healthkard99@gmail.com' && password === 'Healthkard@99') {
+            const token = Math.random().toString(36).substring(2, 12);
+            res.status(200).send({ message: 'Login successful', token: token, status: 200 });
+        } else {
+            res.status(400).send({ message: 'Invalid credentials', status: 400 });
+        }
+    } catch (error) {
+        console.error('Error sending password:', error);
+        res.status(500).send({ message: 'Failed to send password', error: error.message });
+    }
+});
+
 module.exports = router;

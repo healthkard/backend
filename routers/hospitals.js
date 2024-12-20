@@ -196,4 +196,16 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+
+router.get('/statistics', async (req, res) => {
+    const hospitals = await Hospital.find({});
+    const today = new Date().toISOString().split('T')[0];
+    const todayHospitals = hospitals.filter(hospital => hospital.createdDate.split('T')[0] === today);
+    res.status(200).send([
+        { label: 'Today’s approved hospitals', value: todayHospitals.length },
+        { label: 'Total approved hospitals', value: hospitals.filter(hospital => hospital.isverified === '2').length },
+        { label: 'Pending hospitals', value: hospitals.filter(hospital => hospital.isverified !== '2').length },
+    ]);
+});
+
 module.exports = router;
